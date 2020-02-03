@@ -1,5 +1,5 @@
-<div class="footer">
-    <div class="container">
+{{--<div class="footer">
+   --}}{{-- <div class="container">
         <p>Copyrights © 2020</p>
         <div class="social">
             <a href="#"><i class="facebook"></i></a>
@@ -11,5 +11,5 @@
         <div class="arrow">
             <a class="scroll" href="#home"><img src="{{ asset('images/top.png')  }}" alt=""></a>
         </div>
-    </div>
-</div>
+    </div>--}}{{--
+</div>--}}

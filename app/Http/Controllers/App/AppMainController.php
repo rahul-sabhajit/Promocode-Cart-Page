@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\App;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
+use Illuminate\Http\Request,Image,Session;
 use Illuminate\Support\Facades\Auth;
 
 class AppMainController extends Controller
@@ -16,18 +16,12 @@ class AppMainController extends Controller
         $this->middleware('CustomAuth', ['except' => 'logout']);
     }
 
-    public function home()
+    public function product()
     {
-        return view('home');
 
-    }
-
-    public function showcalulator()
-    {
-        $access_token = session('secret_token');
         $curl = curl_init();
         curl_setopt_array($curl, array(
-            CURLOPT_URL => env('API_URL') . 'method',
+            CURLOPT_URL => env('API_URL') . 'productDetails',
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_ENCODING => "",
             CURLOPT_MAXREDIRS => 10,
@@ -36,7 +30,6 @@ class AppMainController extends Controller
             CURLOPT_CUSTOMREQUEST => "GET",
             CURLOPT_HTTPHEADER => array(
                 "Accept: application/json",
-                "Authorization: Bearer $access_token"
             ),
         ));
         $response = curl_exec($curl);
@@ -46,23 +39,16 @@ class AppMainController extends Controller
         $array = json_decode($response, true);
         if ($array['message'] == "success") {
 
-            return view('calculator')->with('method', $array['Method']);
-        } else {
-            echo "method not mound";
-        }
+            return view('product')->with('product', $array['product']['data']);
 
+        }
     }
 
-    public function calculate(Request $request)
+    public function home()
     {
-
-        //echo "hi";
-        $access_token = session('secret_token');
-        $secret_user_id = session('secret_user_id');
-
         $curl = curl_init();
         curl_setopt_array($curl, array(
-            CURLOPT_URL => env('API_URL') . 'method',
+            CURLOPT_URL => env('API_URL') . 'productDetails',
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_ENCODING => "",
             CURLOPT_MAXREDIRS => 10,
@@ -71,29 +57,38 @@ class AppMainController extends Controller
             CURLOPT_CUSTOMREQUEST => "GET",
             CURLOPT_HTTPHEADER => array(
                 "Accept: application/json",
-                "Authorization: Bearer $access_token"
             ),
         ));
-        $responseL = curl_exec($curl);
+        $response = curl_exec($curl);
 
         $err = curl_error($curl);
         curl_close($curl);
-        $arrayL = json_decode($responseL, true);
+        $array = json_decode($response, true);
+        if ($array['message'] == "success") {
 
-        /*$postD['number'] = $request->number;
-        $postD['methodType'] = $request->methodType;
-        $postD['user_id'] = $secret_user_id;*/
-        /*$postData = json_encode($postD);*/
+            return view('loggedproduct')->with('product', $array['product']['data']);
+
+        }
+
+    }
+
+    public function addtocart($id){
+        $email = Auth::user()->email;//exit;
+        $product_id = $id;
+
+
+        $access_token = session('secret_token');
+        //echo $access_token;exit;
         $curl = curl_init();
         curl_setopt_array($curl, array(
-            CURLOPT_URL => env('API_URL') . 'calculateLcm',
+            CURLOPT_URL => env('API_URL') . 'addtocart',
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_ENCODING => "",
             CURLOPT_MAXREDIRS => 10,
             CURLOPT_TIMEOUT => 30,
             CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
             CURLOPT_CUSTOMREQUEST => "POST",
-            CURLOPT_POSTFIELDS => array('number' => $request->number,'methodType' => $request->methodType,'user_id' => $secret_user_id),
+            CURLOPT_POSTFIELDS => array('email' => $email,'product_id' => $product_id),
             CURLOPT_HTTPHEADER => array(
                 "Accept: application/json",
                 "Authorization: Bearer $access_token"
@@ -104,17 +99,18 @@ class AppMainController extends Controller
         $err = curl_error($curl);
         curl_close($curl);
         $array = json_decode($response, true);
-        //echo json_encode($array);exit;
-        if ($array['message'] == "success") {
+        if($array['message'] == "success") {
+            session()->flash('status', 'Product Added Successfully!');
+        }else{
+            session()->flash('status', 'Product Already exist in Cart!');
 
-            return view('calculator')->with('method', $arrayL['Method'])->with('result', $array)->with('selectedmethod', $request->methodType)->with('given_input', $request->number);
-        } else {
-            return view('calculator')->with('method', $arrayL['Method'])->with('message', 'Given Input Format Not Supported');
         }
+        return redirect('home');
 
     }
 
-    public function usershow(Request $request){
+    public function cart(Request $request){
+        $email = Auth::user()->email;//exit;
         //$page =0;
         $page = ($request->input('page'))-1;
         if($page > -1) {
@@ -125,13 +121,14 @@ class AppMainController extends Controller
         $access_token = session('secret_token');
         $curl = curl_init();
         curl_setopt_array($curl, array(
-            CURLOPT_URL => env('API_URL') . 'user?page='.$page,
+            CURLOPT_URL => env('API_URL') . 'cart?page='.$page,
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_ENCODING => "",
             CURLOPT_MAXREDIRS => 10,
             CURLOPT_TIMEOUT => 30,
             CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-            CURLOPT_CUSTOMREQUEST => "GET",
+            CURLOPT_CUSTOMREQUEST => "POST",
+            CURLOPT_POSTFIELDS => array('email' => $email),
             CURLOPT_HTTPHEADER => array(
                 "Accept: application/json",
                 "Authorization: Bearer $access_token"
@@ -142,13 +139,12 @@ class AppMainController extends Controller
         $err = curl_error($curl);
         curl_close($curl);
         $array = json_decode($response, true);
-
-
-            return view('userlist')->with('data', $array)->with('pagestart', $curr_start);
+        //echo json_encode($array);exit;
+            return view('cart')->with('data', $array)->with('pagestart', $curr_start);
 
     }
 
-    public function lcmcalculated(Request $request){
+    public function promocode(Request $request){
         $page = ($request->input('page'))-1;
         if($page > -1) {
             $curr_start = $page * 15;
@@ -159,7 +155,7 @@ class AppMainController extends Controller
         $access_token = session('secret_token');
         $curl = curl_init();
         curl_setopt_array($curl, array(
-            CURLOPT_URL => env('API_URL') . 'lcmhistory?page='.$page,
+            CURLOPT_URL => env('API_URL') . 'promocode?page='.$page,
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_ENCODING => "",
             CURLOPT_MAXREDIRS => 10,
@@ -177,7 +173,148 @@ class AppMainController extends Controller
         curl_close($curl);
         $array = json_decode($response, true);
         //echo json_encode($array);exit;
-        return view('lcmhistory')->with('data', $array)->with('pagestart', $curr_start);
+        return view('promocode')->with('data', $array)->with('pagestart', $curr_start);
+
+    }
+
+    public function decreaseproductqty($id){
+        $cart_id = $id;
+        $access_token = session('secret_token');
+        //echo $access_token;exit;
+        $curl = curl_init();
+        curl_setopt_array($curl, array(
+            CURLOPT_URL => env('API_URL') . 'decreaseCartQty',
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_ENCODING => "",
+            CURLOPT_MAXREDIRS => 10,
+            CURLOPT_TIMEOUT => 30,
+            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+            CURLOPT_CUSTOMREQUEST => "POST",
+            CURLOPT_POSTFIELDS => array('cart_id' => $cart_id),
+            CURLOPT_HTTPHEADER => array(
+                "Accept: application/json",
+                "Authorization: Bearer $access_token"
+            ),
+        ));
+        $response = curl_exec($curl);
+
+        $err = curl_error($curl);
+        curl_close($curl);
+        $array = json_decode($response, true);
+        if($array['message'] == "QtyDecreases") {
+            session()->flash('status', 'Product Quantity Decreases!');
+        }else{
+            session()->flash('status', 'Product Quantity can not be Decreases!');
+
+        }
+        return redirect('cart');
+
+    }
+    public function increaseproductqty($id){
+        $cart_id = $id;
+        $access_token = session('secret_token');
+        //echo $access_token;exit;
+        $curl = curl_init();
+        curl_setopt_array($curl, array(
+            CURLOPT_URL => env('API_URL') . 'increaseCartQty',
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_ENCODING => "",
+            CURLOPT_MAXREDIRS => 10,
+            CURLOPT_TIMEOUT => 30,
+            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+            CURLOPT_CUSTOMREQUEST => "POST",
+            CURLOPT_POSTFIELDS => array('cart_id' => $cart_id),
+            CURLOPT_HTTPHEADER => array(
+                "Accept: application/json",
+                "Authorization: Bearer $access_token"
+            ),
+        ));
+        $response = curl_exec($curl);
+
+        $err = curl_error($curl);
+        curl_close($curl);
+        $array = json_decode($response, true);
+        if($array['message'] == "QtyIncreases") {
+            session()->flash('status', 'Product Quantity Increases!');
+        }else{
+            session()->flash('status', 'Product Quantity can not be Increases!');
+
+        }
+        return redirect('cart');
+
+
+    }
+    public function removecartproduct($id){
+        $cart_id = $id;
+        $access_token = session('secret_token');
+        //echo $access_token;exit;
+        $curl = curl_init();
+        curl_setopt_array($curl, array(
+            CURLOPT_URL => env('API_URL') . 'removeCartProduct',
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_ENCODING => "",
+            CURLOPT_MAXREDIRS => 10,
+            CURLOPT_TIMEOUT => 30,
+            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+            CURLOPT_CUSTOMREQUEST => "POST",
+            CURLOPT_POSTFIELDS => array('cart_id' => $cart_id),
+            CURLOPT_HTTPHEADER => array(
+                "Accept: application/json",
+                "Authorization: Bearer $access_token"
+            ),
+        ));
+        $response = curl_exec($curl);
+
+        $err = curl_error($curl);
+        curl_close($curl);
+        $array = json_decode($response, true);
+        if($array['message'] == "productRemove") {
+            session()->flash('status', 'Product Removed!');
+        }else{
+            session()->flash('status', 'Product can not Removed!');
+
+        }
+        return redirect('cart');
+
+    }
+
+    public function applypromo(Request $request){
+        $email = Auth::user()->email;
+        $promocode = $request->input('promocode');
+        $page = ($request->input('page'))-1;
+        if($page > -1) {
+            $curr_start = $page * 15;
+        }else{
+            $curr_start =0;
+        }
+        $access_token = session('secret_token');
+        $curl = curl_init();
+        curl_setopt_array($curl, array(
+            CURLOPT_URL => env('API_URL') . 'applypromo?page='.$page,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_ENCODING => "",
+            CURLOPT_MAXREDIRS => 10,
+            CURLOPT_TIMEOUT => 30,
+            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+            CURLOPT_CUSTOMREQUEST => "POST",
+            CURLOPT_POSTFIELDS => array('email' => $email, 'promo' => $promocode),
+            CURLOPT_HTTPHEADER => array(
+                "Accept: application/json",
+                "Authorization: Bearer $access_token"
+            ),
+        ));
+        $response = curl_exec($curl);
+
+        $err = curl_error($curl);
+        curl_close($curl);
+        $array = json_decode($response, true);
+        //echo json_encode($array);exit;
+        if($array['message'] == "valid_promocode") {
+            return view('cart')->with('data', $array)->with('pagestart', $curr_start)->with('message', "Promocode is applied");
+        }else{
+            return view('cart')->with('data', $array)->with('pagestart', $curr_start)->with('message', "Invalid Promocode");
+        }
+
 
     }
 }

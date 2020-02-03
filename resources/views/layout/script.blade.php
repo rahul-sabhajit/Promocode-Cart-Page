@@ -27,8 +27,13 @@
         */
         $().UItoTop({ easingType: 'easeOutQuart' });
     });
+    $(".view a").on('click', function(){
+        $('.products ul').toggleClass('list');
+        return false;
+    });
 
 </script>
+
 <script>
     var myVar;
 
@@ -40,6 +45,7 @@
         document.getElementById("loader").style.display = "none";
         document.getElementById("maindv").style.opacity = "1";
     }
+
 </script>
 
 <a href="#to-top" id="toTop" style="display: block;"> <span id="toTopHover" style="opacity: 1;"> </span></a>

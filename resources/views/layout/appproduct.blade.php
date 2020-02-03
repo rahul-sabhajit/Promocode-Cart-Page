@@ -1,11 +1,11 @@
 <!DOCTYPE HTML>
 <html lang="en">
 @section('htmlheader')
-    @include('layout.guest.htmlheader')
+    @include('layout.htmlheader')
 @show
 
 <body>
-@include('layout.guest.mainheader')
+@include('layout.guest.productmainheader')
 @yield('main-content')
 @section('script')
     @include('layout.script')

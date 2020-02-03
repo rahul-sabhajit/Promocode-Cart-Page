@@ -150,7 +150,11 @@ class AppController extends Controller
                 return redirect('/register')->with( ['message' => $message] );
             }
         }else{
-            $message = $array['errors']['email'][0];
+            if(isset($array['errors']['email'][0])) {
+                $message = $array['errors']['email'][0];
+            }else{
+                $message = $array['message'];
+            }
             //echo $message;exit;
             return redirect('/register')->with( ['message' => $message] );
         }

@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateLcmMethodsTable extends Migration
+class CreatePromocodesTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,9 +13,12 @@ class CreateLcmMethodsTable extends Migration
      */
     public function up()
     {
-        Schema::create('lcm_methods', function (Blueprint $table) {
+        Schema::create('promocodes', function (Blueprint $table) {
             $table->bigIncrements('id');
-            $table->string('methodName');
+            $table->string('discount_code');
+            $table->string('used_count');
+            $table->string('total_count');
+            $table->string('percentage');
             $table->timestamps();
         });
     }
@@ -27,6 +30,6 @@ class CreateLcmMethodsTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('lcm_methods');
+        Schema::dropIfExists('promocodes');
     }
 }

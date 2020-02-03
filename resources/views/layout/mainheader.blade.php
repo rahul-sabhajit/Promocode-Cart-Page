@@ -1,19 +1,14 @@
-<div id="home" class="top-header">
+<div id="home" class="top-header" style="background-color: #2e6da4; color: #ffffff;">
     <div class="container">
-        <div class="logo">
-            <h1><a href="#">LCM</a></h1>
-        </div>
         <div class="top-menu">
             <span class="menu"><img src="images/nav-icon.png" alt=""/></span>
             <ul>
 
-                <li><a class="" id="lcm" name="lcm" href="{{ url('/lcm') }}">Calculate LCM</a></li>
-                <li><a class="" href="#"></a></li>
-                <li><a class="" id="userlist" name="userlist" href="{{ url('/userlist?page=1') }}">Users</a></li>
-                <li><a class="" id="lcmhistory" name="lcmhistory" href="{{url('/lcmhistory?page=1')}}">LCM History</a></li>
-                <li><a class="" href="#"></a></li>
+                <li><a class="" id="product" name="product" href="{{ url('/home') }}">Product</a></li>
+                <li><a class="" id="cart" name="cart" href="{{ url('/cart') }}">Cart</a></li>
+                <li><a class="" id="" name="" href="#"></a></li>
+                <li><a class="" id="promocode" name="promocode" href="{{url('/promocode?page=1')}}">Promocode</a></li>
                 <li><a class="" id="logout" name="logout" href="{{url('/logout')}}">Logout</a></li>
-
             </ul>
             <!-- script-for-menu -->
             <script>
